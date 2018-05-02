@@ -40,7 +40,9 @@ app.get("/", (req, res) => {
 	
 	//Muodosta KeyValues responssi
 	let response = '"WorkshopData"\n{\n';
+
 	mapObjArray.forEach(mapObj => {
+		
 		response += '    "section"\n    {\n';
 		
 		for (var key in mapObj) 
@@ -54,6 +56,7 @@ app.get("/", (req, res) => {
 		
 		response += "    }\n";
 	});
+
 	response += "}\n";
 	///////////////////////////
 
@@ -105,11 +108,53 @@ function ScrapeMapWorkshopUrl(workshopItem)
 				"rating": rating,
 				"maker": maker,
 				"mapname": mapname,
-				"gamemode": gamemode
+				"gamemode": gamemode,
+				"time_created": 0,
+				"time_updated": 0
 			}
 
 			mapObjArray.push(mapDataObJ);
 		});
+	}).on('complete', function(response) {
+		let IDs = [];
+
+		mapObjArray.forEach(mapItem => {
+			IDs.push(mapItem.id);
+		});
+
+		var requestData = {
+			"format": 'json',
+			"itemcount": mapObjArray.length,
+			"publishedfileids": IDs
+		}
+
+		request.post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", {form: requestData}, function (error, resp, body) 
+		{
+			if(error || response.statusCode != 200){
+				console.error(`GetPublishedFileDetails: Failed to parse error ${error} status ${resp.statusCode}`);
+				return;
+			}
+
+			var data = JSON.parse(body);
+
+			if (!data || !data.response || !data.response.publishedfiledetails) {
+				console.error('GetPublishedFileDetails: No data in response');
+				return;
+			}
+
+			//Loop response
+			data.response.publishedfiledetails.forEach(item => {
+
+				//Assocciate and append response data to scraped data.
+				mapObjArray.forEach(map => {
+					if(map.id != item.publishedfileid)
+						return;
+
+					map.time_created = item.time_created;
+					map.time_updated = item.time_updated;
+				});
+			});
+		})
 	});
 }
 
