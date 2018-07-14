@@ -102,7 +102,9 @@ stock void DisplayMapMenu(int client, const char[] gamemode, int page = 0)
 		char strGameMode[32]; 
 		g_hMaps.GetString(i + 4, strGameMode, sizeof(strGameMode));
 
-		if(StrEqual(gamemode, strGameMode) || StrEqual(gamemode, ""))
+		bool bIgnoreGameMode = (StrEqual(gamemode, "NEW") || StrEqual(gamemode, "UPDATED"));
+
+		if(StrEqual(gamemode, strGameMode) || StrEqual(gamemode, "") || bIgnoreGameMode)
 		{
 			char display[526], rating[18];
 			char strID[32], strRating[32], strMaker[32], strMapname[256], strTimeCreated[32], strTimeUpdated[32];
@@ -126,7 +128,6 @@ stock void DisplayMapMenu(int client, const char[] gamemode, int page = 0)
 			//Updated if map last updated a week ago.
 			bool bRecentlyUpdated = (GetTime() - time_updated < (86400 * 7));
 			
-			
 			if(bNew) {
 				Format(strMapname, sizeof(strMapname), "%s (NEW!)", strMapname);
 			}
@@ -146,6 +147,13 @@ stock void DisplayMapMenu(int client, const char[] gamemode, int page = 0)
 			}
 			
 			Format(display, sizeof(display), "%s\nBy: %s\n%s", strMapname, strMaker, rating);
+			
+			if(StrEqual(gamemode, "NEW") && !bNew)
+				continue;
+				
+			if(StrEqual(gamemode, "UPDATED") && !bRecentlyUpdated)
+				continue;
+				
 			manu.AddItem(strID, display);
 		}
 	}
@@ -184,6 +192,10 @@ public int MenuGamemodeHandler(Handle menu, MenuAction action, int param1, int p
 	{
 		char strGamemode[32];
 		GetMenuItem(menu, param2, strGamemode, sizeof(strGamemode));
+		
+		//if(StrEqual(strGamemode, "NEW"))
+			//
+		
 		
 		DisplayMapMenu(param1, strGamemode);
 	}
@@ -440,8 +452,15 @@ stock void ParseMaps()
 	}
 	while (KvGotoNextKey(kvConfig));
 	
+	
 	g_hGamemodeMenu = CreateMenu(MenuGamemodeHandler);
 	g_hGamemodeMenu.SetTitle("[WorkshopMaps] Select Gamemode\n ");
+	
+	
+	g_hGamemodeMenu.AddItem("NEW", " - NEW maps", (iNew > 0) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+	g_hGamemodeMenu.AddItem("UPDATED", " - Recently updated maps\n ", (iUpdated > 0) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+	
+	
 	
 	for (int i = 0; i < hGameModes.Length; i++)
 	{
