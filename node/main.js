@@ -38,6 +38,9 @@ var mapObjArray = [];
 //GET maps
 app.get("/", (req, res) => {
 	
+	if(mapObjArray.length < 420)
+		return res.end();
+
 	//Muodosta KeyValues responssi
 	let response = '"WorkshopData"\n{\n';
 
@@ -78,7 +81,7 @@ function ScrapeMapWorkshopUrl(workshopItem)
 	
 	console.log("Scraping TF2 Map Workshop Data for " + gamemode + " for " + iDays + " days...");
 	
-	request(workshopItem[0], function(error, response, html)
+	request(workshopItem[0], (error, response, html) =>
 	{
 		if(error || response.statusCode != 200){
 			console.error(`Failed to parse "${gamemode}" error ${error} status ${response.statusCode}`);
@@ -115,7 +118,7 @@ function ScrapeMapWorkshopUrl(workshopItem)
 
 			mapObjArray.push(mapDataObJ);
 		});
-	}).on('complete', function(response) {
+	}).on('complete', (response) => {
 		let IDs = [];
 
 		mapObjArray.forEach(mapItem => {
@@ -128,7 +131,7 @@ function ScrapeMapWorkshopUrl(workshopItem)
 			"publishedfileids": IDs
 		}
 
-		request.post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", {form: requestData}, function (error, resp, body) 
+		request.post("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/", {form: requestData}, (error, resp, body) =>
 		{
 			if(error || response.statusCode != 200){
 				console.error(`GetPublishedFileDetails: Failed to parse error ${error} status ${resp.statusCode}`);
