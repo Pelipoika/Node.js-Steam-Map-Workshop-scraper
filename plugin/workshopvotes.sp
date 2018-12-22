@@ -86,6 +86,9 @@ public Action Command_ShowMaps(int client, int args)
 		else
 		{
 			ReplyToCommand(client, "[WorkshopMaps] Menu is invalid??");
+			
+			//Retry
+			Workshop_GetMaps();
 		}
 	}
 
