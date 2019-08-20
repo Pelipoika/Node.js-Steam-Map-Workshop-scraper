@@ -253,8 +253,10 @@ public int Menu_MapDo(Handle menu, MenuAction action, int param1, int param2)
 			case 0:
 			{
 				char url[256];
-				Format(url, 255, "http://steamcommunity.com/sharedfiles/filedetails/?id=%s", strID);
+				Format(url, 255, "https://steamcommunity.com/sharedfiles/filedetails/?id=%s", strID);
 				
+				FakeClientCommand(param1, "show_htmlpage \"%s\"", url);
+				/*
 				KeyValues kv = CreateKeyValues("motd");
 				kv.SetString("title", "Profile");
 				kv.SetNum("type", MOTDPANEL_TYPE_URL);
@@ -262,7 +264,7 @@ public int Menu_MapDo(Handle menu, MenuAction action, int param1, int param2)
 				kv.SetNum("customsvr", 1);
 		
 				ShowVGUIPanel(param1, "info", kv);
-				delete kv;
+				delete kv;*/
 			}
 			case 1:
 			{
